@@ -1,0 +1,222 @@
+import pygame
+import sys
+
+# Inicializar o Pygame
+pygame.init()
+
+# Definições de cores
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+
+# Dimensões da tela
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))  # Criação da tela
+pygame.display.set_caption('The Duck')  # Definir título da janela
+
+# Função para carregar e redimensionar imagens
+def carregar_imagem(nome, largura=None, altura=None):
+    try:
+        imagem = pygame.image.load(nome)
+        if largura and altura:
+            imagem = pygame.transform.scale(imagem, (largura, altura))
+        return imagem
+    except pygame.error as e:
+        print(f"Não foi possível carregar a imagem: {e}")
+        sys.exit()
+
+# Carregar imagens
+background_inicio = carregar_imagem("background.jpg", SCREEN_WIDTH, SCREEN_HEIGHT)
+background_comandos = carregar_imagem("comandos.png")
+background_jogo = carregar_imagem("fundo.png", SCREEN_WIDTH, SCREEN_HEIGHT)
+
+# Função para redimensionar o pato
+def redimensionar_imagem(imagem, largura, altura):
+    return pygame.transform.scale(imagem, (largura, altura))
+
+# Carregar as imagens do pato
+pato_parado = redimensionar_imagem(carregar_imagem("Pato_parado.png"), 40, 40)
+
+# Animações do pato
+pato_cima = [redimensionar_imagem(carregar_imagem(f'Pato_cima_{i}.png'), 40, 40) for i in range(1, 4)]
+pato_baixo = [redimensionar_imagem(carregar_imagem(f'Pato_baixo_{i}.png'), 40, 40) for i in range(1, 4)]
+pato_esquerda = [redimensionar_imagem(carregar_imagem(f'Pato_esquerda_{i}.png'), 40, 40) for i in range(1, 7)]
+pato_direita = [redimensionar_imagem(carregar_imagem(f'Pato_direita_{i}.png'), 40, 40) for i in range(1, 7)]
+
+# Carregar as imagens da cobra
+cobra_imagem_1 = redimensionar_imagem(carregar_imagem("Cobra_1.png"), 140, 70)  # Tamanho dobrado
+cobra_imagem_2 = redimensionar_imagem(carregar_imagem("Cobra_2.png"), 140, 70)  # Tamanho dobrado
+
+# Definir variáveis de movimento
+pos_x = SCREEN_WIDTH // 2
+pos_y = SCREEN_HEIGHT // 2
+velocidade_pato = 8
+direcao = "parado"
+indice_animacao = 0
+clock = pygame.time.Clock()
+
+# Variáveis da cobra
+cobra_pos_x = SCREEN_WIDTH
+cobra_pos_y = SCREEN_HEIGHT // 2
+velocidade_cobra = 5
+cobra_animacao_index = 0
+cobra_colisao_rect = pygame.Rect(cobra_pos_x, cobra_pos_y, 70, 15)  # Definindo a área de colisão da cobra
+
+# Função para animar o pato
+def animar_pato(direcao):
+    global indice_animacao
+    if direcao == "cima":
+        frame_count = len(pato_cima)
+        screen.blit(pato_cima[indice_animacao // 10 % frame_count], (pos_x, pos_y))
+    elif direcao == "baixo":
+        frame_count = len(pato_baixo)
+        screen.blit(pato_baixo[indice_animacao // 10 % frame_count], (pos_x, pos_y))
+    elif direcao == "esquerda":
+        frame_count = len(pato_esquerda)
+        screen.blit(pato_esquerda[indice_animacao // 10 % frame_count], (pos_x, pos_y))
+    elif direcao == "direita":
+        frame_count = len(pato_direita)
+        screen.blit(pato_direita[indice_animacao // 10 % frame_count], (pos_x, pos_y))
+    else:
+        screen.blit(pato_parado, (pos_x, pos_y))
+
+    indice_animacao += 1
+
+# Função para animar e mover a cobra
+def animar_cobra():
+    global cobra_pos_x, cobra_animacao_index, cobra_colisao_rect
+    cobra_pos_x -= velocidade_cobra
+
+    # Verifica se a cobra saiu da tela e a reposiciona do outro lado
+    if cobra_pos_x < -120:
+        cobra_pos_x = SCREEN_WIDTH
+
+    # Alternar entre as imagens da cobra
+    if cobra_animacao_index % 20 < 10:
+        screen.blit(cobra_imagem_1, (cobra_pos_x, cobra_pos_y))
+    else:
+        screen.blit(cobra_imagem_2, (cobra_pos_x, cobra_pos_y))
+
+    # Atualizar a posição da área de colisão da cobra
+    cobra_colisao_rect = pygame.Rect(cobra_pos_x + 25, cobra_pos_y + 52, 105, 20)
+    cobra_animacao_index += 1
+
+# Função para detectar colisão entre o pato e a cobra
+def detectar_colisao():
+    pato_rect = pygame.Rect(pos_x, pos_y, 40, 40)
+    if pato_rect.colliderect(cobra_colisao_rect):
+        tela_tente_novamente()
+
+# Função para exibir a tela "Tente novamente"
+def tela_tente_novamente():
+    font = pygame.font.Font(None, 35)
+    button_recomecar = create_button("RECOMEÇAR", font, BLACK, 300, 400, 200, 50)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if button_recomecar.collidepoint(event.pos):
+                    jogo()
+
+        screen.fill(BLACK)
+        draw_text("TENTE NOVAMENTE", font, WHITE, screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50)
+        create_button("RECOMEÇAR", font, BLACK, 300, 400, 200, 50)
+        pygame.display.update()
+
+# Jogo principal
+def jogo():
+    global pos_x, pos_y, direcao, indice_animacao
+    pos_x, pos_y = SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2  # Resetando a posição do pato
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_UP] and pos_y > 0:
+            pos_y -= velocidade_pato
+            direcao = "cima"
+        elif keys[pygame.K_DOWN] and pos_y < SCREEN_HEIGHT - 40:
+            pos_y += velocidade_pato
+            direcao = "baixo"
+        elif keys[pygame.K_LEFT] and pos_x > 0:
+            pos_x -= velocidade_pato
+            direcao = "esquerda"
+        elif keys[pygame.K_RIGHT] and pos_x < SCREEN_WIDTH - 40:
+            pos_x += velocidade_pato
+            direcao = "direita"
+        else:
+            direcao = "parado"
+
+        # Desenhar o fundo e animar os personagens
+        screen.blit(background_jogo, (0, 0))
+        animar_pato(direcao)
+        animar_cobra()
+
+        # Detectar colisão
+        detectar_colisao()
+
+        pygame.display.update()
+        clock.tick(30)  # Controle de FPS (30 quadros por segundo)
+
+# Tela de início
+def inicio_screen():
+    font = pygame.font.Font(None, 35)
+    button_start = create_button("START", font, BLACK, 300, 200, 200, 50)
+    button_comandos = create_button("COMANDOS", font, BLACK, 300, 300, 200, 50)
+    button_exit = create_button("EXIT", font, BLACK, 300, 400, 200, 50)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if button_start.collidepoint(event.pos):
+                    jogo()
+                if button_comandos.collidepoint(event.pos):
+                    comandos_screen()
+                if button_exit.collidepoint(event.pos):
+                    pygame.quit()
+                    sys.exit()
+
+        screen.blit(background_inicio, (0, 0))
+        create_button("START", font, BLACK, 300, 200, 200, 50)
+        create_button("COMANDOS", font, BLACK, 300, 300, 200, 50)
+        create_button("EXIT", font, BLACK, 300, 400, 200, 50)
+        pygame.display.update()
+# Função para desenhar texto na tela
+def draw_text(text, font, color, surface, x, y):
+    text_obj = font.render(text, True, color)
+    text_rect = text_obj.get_rect(center=(x, y))
+    surface.blit(text_obj, text_rect)
+
+# Função para criar botões
+def create_button(text, font, color, x, y, width, height):
+    button_rect = pygame.Rect(x, y, width, height)
+    pygame.draw.rect(screen, WHITE, button_rect)
+    draw_text(text, font, color, screen, button_rect.centerx, button_rect.centery)
+    return button_rect
+
+# Tela de comandos
+def comandos_screen():
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                inicio_screen()
+
+        screen.blit(background_comandos, (0, 0))
+        pygame.display.update()
+
+# Iniciar o jogo
+inicio_screen()
+pygame.quit()
