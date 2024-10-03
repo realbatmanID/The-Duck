@@ -5,4 +5,4 @@ Este jogo foi desenvolvido como parte de um projeto da disciplina Apps e Games, 
 
 Para o desenvolvimento do jogo, dividimos as funções entre a criação das pixel arts e a programação. A Isadora ficou responsável por grande parte das pixel arts, enquanto a Andreia e o Gabriel focaram na parte da programação. Como não encontramos nenhum jogo semelhante programado em Python com Pygame, toda a programação foi feita do zero, baseada nos conhecimentos adquiridos nas aulas da professora Ana Laura, complementados por pesquisas e pelo auxílio de inteligência artificial.
 
-Colaboradores: Andreia (TherealYum1); Gabriel N.(realbatmanID); Isadora ().
+Colaboradores: Andreia (TherealYum1); Gabriel N.(realbatmanID); Isadora (Sputnik58).
