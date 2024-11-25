@@ -1,0 +1,5 @@
+Para começar, faça o download do arquivo. O arquivo que contém o jogo é o "JOGO DUCK.ZIP". 
+Caso tenha baixado apenas esse arquivo, basta extrair a pasta. No VSCode, selecione a pasta "DUCK GABRIEL". 
+Ainda no VSCode, é necessário instalar a extensão do Pygame. Se ela ainda não estiver instalada, você pode instalar diretamente pelo VSCode. 
+Para isso, abra um novo terminal e digite o seguinte comando: pip install pygame. Assim, o jogo estará pronto para rodar.
+Caso tenha baixado todos os arquivos, será necessário extrair todos eles e, posteriormente, extrair o arquivo "JOGO DUCK.ZIP", continuando o processo já descrito.
